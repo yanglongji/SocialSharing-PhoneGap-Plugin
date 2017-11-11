@@ -258,17 +258,17 @@ static NSString *const kShareOptionUrl = @"url";
 - (bool)isAvailableForSharing:(CDVInvokedUrlCommand*)command
                          type:(NSString *) type {
   // since iOS 11 this will always return false, so assume true
-  if (IsAtLeastiOSVersion(@"11.0")) {
-    return YES;
-  }
+//  if (IsAtLeastiOSVersion(@"11.0")) {
+//    return YES;
+//  }
 
   // isAvailableForServiceType returns true if you pass it a type that is not
   // in the defined constants, this is probably a bug on apples part
-  if(!([type isEqualToString:SLServiceTypeFacebook]
+  if([type isEqualToString:SLServiceTypeFacebook]
        || [type isEqualToString:SLServiceTypeTwitter]
        || [type isEqualToString:SLServiceTypeTencentWeibo]
-       || [type isEqualToString:SLServiceTypeSinaWeibo])) {
-    return false;
+       || [type isEqualToString:SLServiceTypeSinaWeibo]) {
+    return true;
   }
   // wrapped in try-catch, because isAvailableForServiceType may crash if an invalid type is passed
   @try {
@@ -281,14 +281,16 @@ static NSString *const kShareOptionUrl = @"url";
 
 - (void)shareViaInternal:(CDVInvokedUrlCommand*)command
                     type:(NSString *) type {
-
   NSString *message   = [command.arguments objectAtIndex:0];
   // subject is not supported by the SLComposeViewController
   NSArray  *filenames = [command.arguments objectAtIndex:2];
   NSString *urlString = [command.arguments objectAtIndex:3];
-
   // boldly invoke the target app, because the phone will display a nice message asking to configure the app
   SLComposeViewController *composeViewController = [SLComposeViewController composeViewControllerForServiceType:type];
+  if (composeViewController == nil){
+        NSLog(@"沒有安裝相应客户端");
+        return;
+  }
   if (message != (id)[NSNull null]) {
     [composeViewController setInitialText:message];
   }
@@ -624,7 +626,7 @@ static NSString *const kShareOptionUrl = @"url";
 
   // with WhatsApp, we can share an image OR text+url.. image wins if set
   if (image != nil) {
-    NSString * savePath = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents/whatsAppTmp.jpg"];
+    NSString * savePath = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents/whatsAppTmp.wai"];
     [UIImageJPEGRepresentation(image, 1.0) writeToFile:savePath atomically:YES];
     _documentInteractionController = [UIDocumentInteractionController interactionControllerWithURL:[NSURL fileURLWithPath:savePath]];
     _documentInteractionController.UTI = @"net.whatsapp.image";
